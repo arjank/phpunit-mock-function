@@ -1,0 +1,14 @@
+function {{functionName}}({{parameterDefinition}}) {
+    global ${{globalVariableName}};
+
+    $values = func_get_args();
+    $keys = [{{parameterNames}}];
+
+    $parameters = array_combine($keys , $values);
+
+    if ($parameters === false) {
+        ${{globalVariableName}}->fail('Keys and values do not match');
+    }
+
+    return call_user_func(${{globalVariableName}}, $parameters);
+}
