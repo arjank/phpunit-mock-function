@@ -57,16 +57,21 @@ class Generator
             throw InvalidArgumentHelper::factory(1, 'string');
         }
 
-        if (array_key_exists($functionName, self::$mockFunctions) === false) {
-            self::$mockFunctions[$functionName] = $this->createMockFunction($testCase, $functionName, $parameters, $returnValue, $asserts);
+        $namespace = $this->getCallerNamespace();
+
+        $key = vsprintf('%s\\%s', [$namespace, $functionName]);
+
+        if (array_key_exists($key, self::$mockFunctions) === false) {
+            self::$mockFunctions[$key] = $this->createMockFunction($testCase, $namespace, $functionName, $parameters, $returnValue, $asserts);
         }
 
-        return self::$mockFunctions[$functionName];
+        return self::$mockFunctions[$key];
     }
 
     /** @noinspection MoreThanThreeArgumentsInspection
      *
      * @param TestCase $testCase
+     * @param string $namespace
      * @param string $functionName
      * @param array $parameters
      * @param mixed $returnValue
@@ -74,9 +79,9 @@ class Generator
      *
      * @return MockFunctionObject
      */
-    private function createMockFunction(TestCase $testCase, $functionName, array $parameters = [], $returnValue = null, array  $asserts = [])
+    private function createMockFunction(TestCase $testCase, $namespace, $functionName, array $parameters = [], $returnValue = null, array  $asserts = [])
     {
-        $globalVariableName = '_'.md5($functionName);
+        $globalVariableName = '_'.md5($namespace.'\\'.$functionName);
 
         global $$globalVariableName;
 
@@ -99,6 +104,7 @@ class Generator
         $template->setVar([
             'functionName' => $functionName,
             'globalVariableName' => $globalVariableName,
+            'namespace' => $namespace,
             'parameterDefinition' => $parameterDefinition,
             'parameterNames' => $parameterNames,
         ]);
@@ -108,6 +114,25 @@ class Generator
         eval($eval);
 
         return $mockFunction;
+    }
+
+    private function getCallerNamespace()
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
+
+        $caller = array_pop($trace);
+
+        $class = $caller['class'];
+
+        $position = strrpos($class,'\\');
+
+        $namespace = substr($class, 0, $position);
+
+        if ($namespace === '') {
+            throw new PHPUnit_Framework_Exception('Function to mock can not be in global/root namespace');
+        } else {
+            return $namespace;
+        }
     }
 }
 
