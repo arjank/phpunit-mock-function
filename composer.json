@@ -6,5 +6,15 @@
     "require": {
         "phpunit/php-text-template": "^1.0",
         "phpunit/phpunit": "^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Potherca\\Phpunit\\MockFunction\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Potherca\\Phpunit\\MockFunction\\": "tests/"
+        }
     }
 }
