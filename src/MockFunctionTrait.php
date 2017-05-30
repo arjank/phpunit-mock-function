@@ -2,6 +2,7 @@
 
 namespace Potherca\Phpunit\MockFunction;
 
+use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_RuntimeException;
 
 trait MockFunctionTrait
@@ -19,9 +20,7 @@ trait MockFunctionTrait
      */
     final public function getMockFunctionBuilder($functionName, array $parameters = [], $returnValue = null, array  $asserts = [])
     {
-        if ($this instanceof \PHPUnit\Framework\TestCase === false &&
-            $this instanceof \PHPUnit_Framework_TestCase === false
-        ) {
+        if ($this instanceof TestCase === false) {
             throw new PHPUnit_Framework_MockObject_RuntimeException(__TRAIT__.' can only be used by a class that extends PHPUnit_Framework_TestCase');
         } else {
             return new Builder($this, $functionName, $parameters, $returnValue, $asserts);

@@ -2,6 +2,7 @@
 
 namespace Potherca\Phpunit\MockFunction;
 
+use PHPUnit_Framework_AssertionFailedError;
 use PHPUnit_Framework_TestCase as TestCase;
 use PHPUnit_Framework_MockObject_Builder_InvocationMocker;
 use PHPUnit_Framework_MockObject_InvocationMocker;
@@ -16,12 +17,10 @@ class MockFunctionObject implements \PHPUnit_Framework_MockObject_MockObject
     private $asserts;
     /** @var string */
     private $functionName;
-    /** @var Generator */
-    private $generator;
     /** @var array */
     private $parameters;
     /** @var mixed */
-    private $returnValue = null;
+    private $returnValue;
     /** @var TestCase */
     private $testCase;
 
@@ -41,7 +40,6 @@ class MockFunctionObject implements \PHPUnit_Framework_MockObject_MockObject
     {
         $this->asserts = $asserts;
         $this->functionName = $functionName;
-        $this->generator = new Generator();
         $this->parameters = $parameters;
         $this->returnValue = $returnValue;
         $this->testCase  = $testCase;
@@ -73,9 +71,7 @@ class MockFunctionObject implements \PHPUnit_Framework_MockObject_MockObject
                 } else {
                     $this->testCase->assertEquals($expected, $actual);
                 }
-            } else {
-                // Nothing to do... :-(
-            }
+            }/*/ There is nothing else to do... /*/
         }
 
         return $this->returnValue;
@@ -83,6 +79,8 @@ class MockFunctionObject implements \PHPUnit_Framework_MockObject_MockObject
 
     /**
      * @param $message
+     *
+     * @throws PHPUnit_Framework_AssertionFailedError
      */
     public function fail($message)
     {

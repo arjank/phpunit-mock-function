@@ -2,7 +2,9 @@
 
 namespace Potherca\Phpunit\MockFunction;
 
-use PHPUnit_Framework_TestCase as TestCase;
+use InvalidArgumentException;
+use PHPUnit_Framework_Exception;
+use PHPUnit\Framework\TestCase;
 
 class Builder
 {
@@ -16,13 +18,16 @@ class Builder
     /** @var array */
     private $asserts;
     /** @var mixed */
-    private $returnValue = null;
+    private $returnValue;
     /** @var TestCase */
     private $testCase;
 
     //////////////////////////// SETTERS AND GETTERS \\\\\\\\\\\\\\\\\\\\\\\\\\\
     /**
      * @return MockFunctionObject
+     *
+     * @throws InvalidArgumentException
+     * @throws PHPUnit_Framework_Exception
      */
     final public function getMock()
     {

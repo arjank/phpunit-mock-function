@@ -2,7 +2,9 @@
 
 namespace Potherca\Phpunit\MockFunction;
 
-use PHPUnit_Framework_TestCase as TestCase;
+use InvalidArgumentException;
+use PHPUnit_Framework_Exception;
+use PHPUnit\Framework\TestCase;
 use PHPUnit_Util_InvalidArgumentHelper as InvalidArgumentHelper;
 
 class Generator
@@ -18,6 +20,9 @@ class Generator
      * @param array $asserts
      *
      * @return MockFunctionObject
+     *
+     * @throws InvalidArgumentException
+     * @throws PHPUnit_Framework_Exception
      */
     final public function getMock(TestCase $testCase, $functionName, array $parameters = [], $returnValue = null, array  $asserts = [])
     {
@@ -33,6 +38,9 @@ class Generator
      * @param array $asserts
      *
      * @return MockFunctionObject
+     *
+     * @throws InvalidArgumentException
+     * @throws PHPUnit_Framework_Exception
      */
     public function generate(TestCase $testCase, $functionName, array $parameters = [], $returnValue = null, array  $asserts = [])
     {
@@ -49,7 +57,8 @@ class Generator
      *
      * @return MockFunctionObject
      *
-     * @throws \PHPUnit_Framework_Exception
+     * @throws InvalidArgumentException
+     * @throws PHPUnit_Framework_Exception
      */
     private function generateMock(TestCase $testCase, $functionName, array $parameters = [], $returnValue = null, array  $asserts = [])
     {
@@ -78,6 +87,8 @@ class Generator
      * @param array $asserts
      *
      * @return MockFunctionObject
+     *
+     * @throws InvalidArgumentException
      */
     private function createMockFunction(TestCase $testCase, $namespace, $functionName, array $parameters = [], $returnValue = null, array  $asserts = [])
     {
@@ -116,6 +127,11 @@ class Generator
         return $mockFunction;
     }
 
+    /**
+     * @return bool|string
+     *
+     * @throws PHPUnit_Framework_Exception
+     */
     private function getCallerNamespace()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
