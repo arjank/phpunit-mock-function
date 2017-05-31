@@ -36,6 +36,12 @@ class MockFunctionObject implements \PHPUnit_Framework_MockObject_MockObject
         return $this;
     }
 
+    /** @param mixed $returnValue */
+    public function setReturnValue($returnValue)
+    {
+        $this->returnValue = $returnValue;
+    }
+
     final public function __construct(TestCase $testCase, $functionName, array $parameters = [], $returnValue = null, array  $asserts = [])
     {
         $this->asserts = $asserts;
