@@ -66,21 +66,24 @@ class Generator
             throw InvalidArgumentHelper::factory(1, 'string');
         }
 
-        $namespace = $this->getCallerNamespace();
+        $functionName = ltrim($functionName, '\\');
 
-        $key = vsprintf('%s\\%s', [$namespace, $functionName]);
-
-        if (array_key_exists($key, self::$mockFunctions) === false) {
-            self::$mockFunctions[$key] = $this->createMockFunction($testCase, $namespace, $functionName, $parameters, $returnValue, $asserts);
+        if (strrpos($functionName,'\\') === false) {
+            /* Function has no namespace, using caller namespace */
+            $namespace = $this->getCallerNamespace();
+            $functionName = $namespace . '\\' . $functionName;
         }
 
-        return self::$mockFunctions[$key];
+        if (array_key_exists($functionName, self::$mockFunctions) === false) {
+            self::$mockFunctions[$functionName] = $this->createMockFunction($testCase, $functionName, $parameters, $returnValue, $asserts);
+        }
+
+        return self::$mockFunctions[$functionName];
     }
 
     /** @noinspection MoreThanThreeArgumentsInspection
      *
      * @param TestCase $testCase
-     * @param string $namespace
      * @param string $functionName
      * @param array $parameters
      * @param mixed $returnValue
@@ -90,13 +93,19 @@ class Generator
      *
      * @throws InvalidArgumentException
      */
-    private function createMockFunction(TestCase $testCase, $namespace, $functionName, array $parameters = [], $returnValue = null, array  $asserts = [])
+    private function createMockFunction(TestCase $testCase, $functionName, array $parameters = [], $returnValue = null, array  $asserts = [])
     {
-        $globalVariableName = '_'.md5($namespace.'\\'.$functionName);
+        /* At this point the function is guarantied to have a namespace */
+        $position = strrpos($functionName,'\\');
+
+        $function = substr($functionName, $position + 1);
+        $namespace = substr($functionName, 0, $position);
+
+        $globalVariableName = '_'.md5($functionName);
 
         global $$globalVariableName;
 
-        $mockFunction = new MockFunctionObject($testCase, $functionName, $parameters, $returnValue, $asserts);
+        $mockFunction = new MockFunctionObject($testCase, $function, $parameters, $returnValue, $asserts);
 
         $$globalVariableName = $mockFunction;
 
@@ -113,7 +122,7 @@ class Generator
         $template = new \Text_Template(__DIR__.'/mockFunction.tpl', '{{', '}}');
 
         $template->setVar([
-            'functionName' => $functionName,
+            'functionName' => $function,
             'globalVariableName' => $globalVariableName,
             'namespace' => $namespace,
             'parameterDefinition' => $parameterDefinition,
