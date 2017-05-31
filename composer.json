@@ -8,6 +8,9 @@
         "phpunit/phpunit": "^5.0"
     },
     "autoload": {
+        "files": [
+            "src/requireOnce.php"
+        ],
         "psr-4": {
             "Potherca\\Phpunit\\MockFunction\\": "src/"
         }
