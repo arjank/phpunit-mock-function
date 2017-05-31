@@ -3,15 +3,28 @@ namespace {{namespace}}
     function {{functionName}}({{parameterDefinition}}) {
         global ${{globalVariableName}};
 
-        $values = func_get_args();
         $keys = [{{parameterNames}}];
+        $keyCount = \count($keys);
 
-        $parameters = array_combine($keys , $values);
+        $values = \func_get_args();
+        $valueCount = \count($values);
 
-        if ($parameters === false) {
-            ${{globalVariableName}}->fail('Keys and values do not match');
+        if ($valueCount !== $keyCount) {
+            $message = \vsprintf('Mocked function "{{namespace}}\{{functionName}}()" expects exactly %s parameter%s, %s given', [
+                $keyCount,
+                $keyCount === 1 ? '' : 's',
+                $valueCount,
+            ]);
+
+            \trigger_error($message,  \E_USER_WARNING);
+        } else {
+            $parameters = \array_combine($keys , $values);
+
+            if ($parameters === false) {
+                ${{globalVariableName}}->fail('Keys and values do not match');
+            }
+
+            return \call_user_func(${{globalVariableName}}, $parameters);
         }
-
-        return call_user_func(${{globalVariableName}}, $parameters);
     }
 }
