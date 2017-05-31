@@ -1,50 +1,100 @@
 <?php
 
-namespace Foo;
+namespace Potherca\Phpunit\MockFunction;
 
 use PHPUnit\Framework\TestCase;
-use Potherca\Phpunit\MockFunction\Builder;
 
 class BuilderTest extends TestCase
 {
-    const MOCK_RETURN = 'MockReturnValue';
+    const MOCK_RETURN = 'Mock return value for function "%s"';
 
-    final public function testMockingUserlandFunction()
+    final public function testBuilderShouldMockUserlandFunctionWhenCalledFromTestClass()
     {
         $functionName = 'mockFunction';
-        $parameters = [];
-        $returnValue = null;
-        $asserts = [];
 
-        $builder = new Builder($this, $functionName, $parameters, $returnValue, $asserts);
-
-        $builder->getMock();
-
-        $actual = get_defined_functions()['user'];
-
-        $expected = strtolower(__NAMESPACE__.'\\'.$functionName);
-
-        self::assertContains($expected, $actual);
+        $this->createMockFunction($functionName);
     }
 
-    final public function testMockingNativeFunction()
+    final public function testBuilderShouldMockNativeFunctionWhenCalledFomTestClass()
     {
-        $expected = self::MOCK_RETURN;
-
         $functionName = 'get_defined_functions';
-        $parameters = [];
-        $returnValue = $expected;
-        $asserts = [];
 
-        $builder = new Builder($this, $functionName, $parameters, $returnValue, $asserts);
+        $this->createMockFunction($functionName);
+   }
 
-        $definedFunctions = get_defined_functions();
+    final public function testBuilderShouldMockNativeFunctionWhenCalledForFileWithNamespace()
+    {
+        $file = 'native-function-in-namespace.php';
+        $functionName = 'Foo\\strtolower';
+
+        $this->createMockFunction($functionName, $file);
+    }
+
+    final public function testBuilderShouldMockNativeFunctionWhenCalledForFileWithoutNamespace()
+    {
+        $file = 'native-function-in-global-scope.php';
+        $functionName = 'strtolower';
+
+        $this->createMockFunction($functionName, $file);
+    }
+
+    final public function testBuilderShouldMockUserlandFunctionWhenCalledForFileWithNamespace()
+    {
+        $file = 'userland-function-in-namespace.php';
+        $functionName = '\\Foo\\foo';
+
+        $this->createMockFunction($functionName, $file);
+    }
+
+    final public function testBuilderShouldMockUserlandFunctionWhenCalledForFileWithFunctionFromAnotherNamespace()
+    {
+        $file = 'userland-function-from-another-namespace.php';
+        $functionName = 'Bar\\foo';
+
+        $this->createMockFunction($functionName, $file);
+    }
+
+    final public function testBuilderShouldMockUserlandFunctionWhenCalledForFileWithoutNamespace()
+    {
+        $file = 'userland-function-in-global-scope.php';
+        $functionName = __NAMESPACE__.'\\foo';
+
+        $this->createMockFunction($functionName, $file);
+    }
+
+    /**
+     * @param $functionName
+     * @param $file
+     */
+    private function createMockFunction($functionName, $file = '')
+    {
+        $functionName = ltrim($functionName, '\\');
+
+        $expectedReturnValue = vsprintf(self::MOCK_RETURN, [$functionName]);
+
+        $builder = new Builder($this, $functionName, [], $expectedReturnValue);
 
         $builder->getMock();
 
-        $actual = get_defined_functions();
+        if (strpos($functionName, '\\') === false) {
+            /* Functions in global scope are mocked in the current namespace */
+            $functionName = __NAMESPACE__ . '\\' . $functionName;
+        }
 
-        self::assertEquals($expected, $actual);
+        if ($file !== '') {
+            $actualReturnValue = requireOnce(__DIR__ . '/fixtures/' . $file);
+        } else {
+            $actualReturnValue = $functionName();
+        }
+
+        $message = vsprintf('Return value did not match expectation for mocked function "%s" in file "%s"', [$functionName, $file]);
+        self::assertEquals($expectedReturnValue, $actualReturnValue, $message);
+
+        $actual = \get_defined_functions()['user'];
+
+        $expected = \strtolower($functionName);
+
+        self::assertContains($expected, $actual);
     }
 }
 
