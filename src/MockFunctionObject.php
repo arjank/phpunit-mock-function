@@ -8,8 +8,7 @@ use PHPUnit_Framework_MockObject_Builder_InvocationMocker;
 use PHPUnit_Framework_MockObject_InvocationMocker;
 use PHPUnit_Framework_MockObject_Matcher_Invocation;
 
-/**
- * @method PHPUnit_Framework_MockObject_Builder_InvocationMocker method($constraint)
+/** @noinspection PhpHierarchyChecksInspection
  */
 class MockFunctionObject implements \PHPUnit_Framework_MockObject_MockObject
 {
@@ -23,6 +22,10 @@ class MockFunctionObject implements \PHPUnit_Framework_MockObject_MockObject
     private $returnValue;
     /** @var TestCase */
     private $testCase;
+
+    private $__phpunit_configurable = [];
+    private $__phpunit_invocationMocker;
+    private $__phpunit_originalObject;
 
     /**
      * @param array $asserts
@@ -103,32 +106,36 @@ class MockFunctionObject implements \PHPUnit_Framework_MockObject_MockObject
      */
     final public function expects(PHPUnit_Framework_MockObject_Matcher_Invocation $matcher)
     {
-        //return $this->__phpunit_getInvocationMocker()->expects($matcher);
+        return $this->__phpunit_getInvocationMocker()->expects($matcher);
     }
 
-    /**
+    /** @noinspection MagicMethodsValidityInspection
+     * @param $originalObject
+     *
      * @return PHPUnit_Framework_MockObject_InvocationMocker
      *
      * @since  Method available since Release 2.0.0
      */
     final public function __phpunit_setOriginalObject($originalObject)
     {
-        //$this->__phpunit_originalObject = $originalObject;
+        $this->__phpunit_originalObject = $originalObject;
+
+        return $this->__phpunit_invocationMocker;
     }
 
-    /**
+    /** @noinspection MagicMethodsValidityInspection
      * @return PHPUnit_Framework_MockObject_InvocationMocker
      */
     final public function __phpunit_getInvocationMocker()
     {
-        // if ($this->__phpunit_invocationMocker === null) {
-        //     $this->__phpunit_invocationMocker = new PHPUnit_Framework_MockObject_InvocationMocker($this->__phpunit_configurable);
-        // }
-        //
-        // return $this->__phpunit_invocationMocker;
+        if ($this->__phpunit_invocationMocker === null) {
+            $this->__phpunit_invocationMocker = new PHPUnit_Framework_MockObject_InvocationMocker($this->__phpunit_configurable);
+        }
+
+        return $this->__phpunit_invocationMocker;
     }
 
-    /**
+    /** @noinspection MagicMethodsValidityInspection
      * Verifies that the current expectation is valid. If everything is OK the
      * code should just return, if not it must throw an exception.
      *
@@ -136,19 +143,19 @@ class MockFunctionObject implements \PHPUnit_Framework_MockObject_MockObject
      */
     final public function __phpunit_verify($unsetInvocationMocker = true)
     {
-        // $this->__phpunit_getInvocationMocker()->verify();
-        //
-        // if ($unsetInvocationMocker) {
-        //     $this->__phpunit_invocationMocker = null;
-        // }
+        $this->__phpunit_getInvocationMocker()->verify();
+
+        if ($unsetInvocationMocker) {
+            $this->__phpunit_invocationMocker = null;
+        }
     }
 
-    /**
+    /** @noinspection MagicMethodsValidityInspection
      * @return bool
      */
     final public function __phpunit_hasMatchers()
     {
-        //return $this->__phpunit_getInvocationMocker()->hasMatchers();
+        return $this->__phpunit_getInvocationMocker()->hasMatchers();
     }
 }
 
