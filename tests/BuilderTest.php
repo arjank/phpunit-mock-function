@@ -8,6 +8,17 @@ class BuilderTest extends TestCase
 {
     const MOCK_RETURN = 'Mock return value for function "%s"';
 
+    /**
+     * @param string $functionName
+     * @param string|null $file
+     *
+     * @dataProvider provideFunctionsToMock
+     */
+    final public function testBuilderShouldMockFunctionWhenCalled($functionName, $file = null)
+    {
+        $this->createMockFunction($functionName, $file);
+    }
+
     final public function testBuilderShouldMockUserlandFunctionWhenCalledFromTestClass()
     {
         $functionName = 'mockFunction';
@@ -87,7 +98,7 @@ class BuilderTest extends TestCase
             $actualReturnValue = $functionName();
         }
 
-        $message = vsprintf('Return value did not match expectation for mocked function "%s" in file "%s"', [$functionName, $file]);
+        $message = vsprintf('Return value did not match expectation for mocked function "%s" (for file "%s")', [$functionName, $file]);
         self::assertEquals($expectedReturnValue, $actualReturnValue, $message);
 
         $actual = \get_defined_functions()['user'];
@@ -95,6 +106,19 @@ class BuilderTest extends TestCase
         $expected = \strtolower($functionName);
 
         self::assertContains($expected, $actual);
+    }
+
+    final public function provideFunctionsToMock()
+    {
+        return [
+            'Native function in global scope' => ['strtolower', 'native-function-in-global-scope.php'],
+            'Native function in namespace' => ['Foo\\strtolower', 'native-function-in-namespace.php'],
+            'Native function in test class' => ['get_defined_functions'],
+            'Userland function from another namespace' => ['Bar\\foo', 'userland-function-from-another-namespace.php'],
+            'Userland function in global scope' => [__NAMESPACE__.'\\foo', 'userland-function-in-global-scope.php'],
+            'Userland function in namespace' => ['\\Foo\\foo', 'userland-function-in-namespace.php'],
+            'Userland function in test class' => ['mockFunction'],
+        ];
     }
 }
 
