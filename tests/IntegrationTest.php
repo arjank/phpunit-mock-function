@@ -41,7 +41,7 @@ class IntegrationTest extends TestCase
     final public function testBuilderShouldMockUserlandFunctionWhenCalledForFileWithNamespace()
     {
         $file = 'userland-function-in-namespace.php';
-        $functionName = '\\Foo\\foo';
+        $functionName = '\\Foo\\mockFunction';
 
         $this->createMockFunction($functionName, $file);
     }
@@ -49,7 +49,7 @@ class IntegrationTest extends TestCase
     final public function testBuilderShouldMockUserlandFunctionWhenCalledForFileWithFunctionFromAnotherNamespace()
     {
         $file = 'userland-function-from-another-namespace.php';
-        $functionName = 'Bar\\foo';
+        $functionName = 'Bar\\mockFunction';
 
         $this->createMockFunction($functionName, $file);
     }
@@ -57,7 +57,7 @@ class IntegrationTest extends TestCase
     final public function testBuilderShouldMockUserlandFunctionWhenCalledForFileWithoutNamespace()
     {
         $file = 'userland-function-in-global-scope.php';
-        $functionName = __NAMESPACE__.'\\foo';
+        $functionName = '\\mockFunction';
 
         $this->createMockFunction($functionName, $file);
     }
@@ -95,7 +95,6 @@ class IntegrationTest extends TestCase
 
         $pass = $pass ?: 'first';
 
-
         $builder = new Builder($this, $functionName, []);
 
         $mockFunction = $builder->getMock();
@@ -114,8 +113,10 @@ class IntegrationTest extends TestCase
         $mockFunction->setReturnValue($expectedReturnValue);
 
         if ($file !== '') {
+            /* Return value is provided from include file */
             $actualReturnValue = requireOnce(__DIR__ . '/fixtures/' . $file);
         } else {
+            /* As there is no file, the return value is provided directly by the function*/
             $actualReturnValue = $functionName();
         }
 
@@ -135,9 +136,9 @@ class IntegrationTest extends TestCase
             'Native function in global scope' => ['strtolower', 'native-function-in-global-scope.php'],
             'Native function in namespace' => ['Foo\\strtolower', 'native-function-in-namespace.php'],
             'Native function in test class' => ['get_defined_functions'],
-            'Userland function from another namespace' => ['Bar\\foo', 'userland-function-from-another-namespace.php'],
-            'Userland function in global scope' => ['\\foo', 'userland-function-in-global-scope.php'],
-            'Userland function in namespace' => ['\\Foo\\foo', 'userland-function-in-namespace.php'],
+            'Userland function from another namespace' => ['Bar\\mockFunction', 'userland-function-from-another-namespace.php'],
+            'Userland function in global scope' => ['\\mockFunction', 'userland-function-in-global-scope.php'],
+            'Userland function in namespace' => ['\\Foo\\mockFunction', 'userland-function-in-namespace.php'],
             'Userland function in test class' => ['mockFunction'],
         ];
     }

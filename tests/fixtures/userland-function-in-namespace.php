@@ -2,6 +2,6 @@
 
 namespace Foo;
 
-return foo();
+return mockFunction();
 
 /*EOF*/

@@ -2,6 +2,6 @@
 
 namespace Foo;
 
-return \Bar\foo();
+return \Bar\mockFunction();
 
 /*EOF*/
