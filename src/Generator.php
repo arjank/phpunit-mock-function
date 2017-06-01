@@ -11,6 +11,20 @@ class Generator
 {
     private static $mockFunctions = [];
 
+    /**
+     * @param string $functionName
+     *
+     * @return MockFunctionObject
+     */
+    public static function getMockFunction($functionName)
+    {
+        $key = self::createKey($functionName);
+        // @FIXME: Throw exception / fail if MockObject does not exist
+        return self::$mockFunctions[$key];
+    }
+
+
+
     /** @noinspection MoreThanThreeArgumentsInspection
      *
      * @param TestCase $testCase
@@ -74,7 +88,7 @@ class Generator
             $functionName = $namespace . '\\' . $functionName;
         }
 
-        $key = md5($functionName);
+        $key = self::createKey($functionName);
 
         $globalVariableName = '_'. $key;
 
@@ -85,10 +99,6 @@ class Generator
         $mockFunction = self::$mockFunctions[$key];
         $mockFunction->setAsserts($asserts);
         $mockFunction->setReturnValue($returnValue);
-
-        // @FIXME: Add a static function and static array to [MockFunctionObject or Generator?] instead of abusing `global`
-        global $$globalVariableName;
-        $$globalVariableName = $mockFunction;
 
         return $mockFunction;
     }
@@ -164,6 +174,16 @@ class Generator
         } else {
             return $namespace;
         }
+    }
+
+    /**
+     * @param $functionName
+     *
+     * @return string
+     */
+    private static function createKey($functionName)
+    {
+        return md5($functionName);
     }
 }
 

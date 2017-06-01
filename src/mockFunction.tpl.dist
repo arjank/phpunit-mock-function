@@ -1,7 +1,8 @@
 namespace {{namespace}}
 {
     function {{functionName}}({{parameterDefinition}}) {
-        global ${{globalVariableName}};
+
+        $mockFunction = \Potherca\Phpunit\MockFunction\Generator::getMockFunction('{{namespace}}\\{{functionName}}');
 
         $keys = [{{parameterNames}}];
         $keyCount = \count($keys);
@@ -21,10 +22,10 @@ namespace {{namespace}}
             $parameters = \array_combine($keys , $values);
 
             if ($parameters === false) {
-                ${{globalVariableName}}->fail('Keys and values do not match');
+                $mockFunction->fail('Keys and values do not match');
             }
 
-            return \call_user_func(${{globalVariableName}}, $parameters);
+            return $mockFunction($parameters);
         }
     }
 }
