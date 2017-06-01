@@ -78,22 +78,19 @@ class Generator
 
         $globalVariableName = '_'. $key;
 
-        // @FIXME: Add a static function and static array to [MockFunctionObject or Generator?] instead of abusing `global`
-        global $$globalVariableName;
-
         if (array_key_exists($key, self::$mockFunctions) === false) {
-            $mockFunction = $this->createMockFunction($testCase, $functionName, $parameters);
-            self::$mockFunctions[$key] = $mockFunction;
-        } else {
-            $mockFunction = self::$mockFunctions[$key];
+            self::$mockFunctions[$key] = $this->createMockFunction($testCase, $functionName, $parameters);
         }
 
+        $mockFunction = self::$mockFunctions[$key];
         $mockFunction->setAsserts($asserts);
         $mockFunction->setReturnValue($returnValue);
 
-        $$globalVariableName = self::$mockFunctions[$key];
+        // @FIXME: Add a static function and static array to [MockFunctionObject or Generator?] instead of abusing `global`
+        global $$globalVariableName;
+        $$globalVariableName = $mockFunction;
 
-        return self::$mockFunctions[$key];
+        return $mockFunction;
     }
 
     /** @noinspection MoreThanThreeArgumentsInspection
