@@ -74,11 +74,26 @@ class Generator
             $functionName = $namespace . '\\' . $functionName;
         }
 
-        if (array_key_exists($functionName, self::$mockFunctions) === false) {
-            self::$mockFunctions[$functionName] = $this->createMockFunction($testCase, $functionName, $parameters, $returnValue, $asserts);
+        $key = md5($functionName);
+
+        $globalVariableName = '_'. $key;
+
+        // @FIXME: Add a static function and static array to [MockFunctionObject or Generator?] instead of abusing `global`
+        global $$globalVariableName;
+
+        if (array_key_exists($key, self::$mockFunctions) === false) {
+            $mockFunction = $this->createMockFunction($testCase, $functionName, $parameters);
+            self::$mockFunctions[$key] = $mockFunction;
+        } else {
+            $mockFunction = self::$mockFunctions[$key];
         }
 
-        return self::$mockFunctions[$functionName];
+        $mockFunction->setAsserts($asserts);
+        $mockFunction->setReturnValue($returnValue);
+
+        $$globalVariableName = self::$mockFunctions[$key];
+
+        return self::$mockFunctions[$key];
     }
 
     /** @noinspection MoreThanThreeArgumentsInspection
@@ -86,14 +101,12 @@ class Generator
      * @param TestCase $testCase
      * @param string $functionName
      * @param array $parameters
-     * @param mixed $returnValue
-     * @param array $asserts
      *
      * @return MockFunctionObject
      *
      * @throws InvalidArgumentException
      */
-    private function createMockFunction(TestCase $testCase, $functionName, array $parameters = [], $returnValue = null, array  $asserts = [])
+    private function createMockFunction(TestCase $testCase, $functionName, array $parameters = [])
     {
         /* At this point the function is guarantied to have a namespace */
         $position = strrpos($functionName,'\\');
@@ -103,11 +116,7 @@ class Generator
 
         $globalVariableName = '_'.md5($functionName);
 
-        global $$globalVariableName;
-
-        $mockFunction = new MockFunctionObject($testCase, $function, $parameters, $returnValue, $asserts);
-
-        $$globalVariableName = $mockFunction;
+        $mockFunction = new MockFunctionObject($testCase, $function, $parameters);
 
         $parameterDefinition = '';
         $parameterNames = '';
