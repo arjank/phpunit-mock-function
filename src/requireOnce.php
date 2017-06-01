@@ -21,13 +21,13 @@ function requireOnce($file)
     $contents = file_get_contents($file);
 
     /* @FIXME: Use parser/lexer instead of preg match to find namespace. */
-    $containsNamespaceDeclaration = preg_match('/namespace [a-zA-Z_]+[a-zA-Z0-9_\\\\]*;/im', $contents);
+    $containsNamespaceDeclaration = (bool) preg_match('/namespace [a-zA-Z_]+[a-zA-Z0-9_\\\\]*;/im', $contents);
 
-    if ($containsNamespaceDeclaration === 1) {
+    if ($containsNamespaceDeclaration === true) {
         $key = '_'.md5($file);
 
         /* $file contents contains a namespace, so just `require_once` it... */
-        if (in_array($file, get_included_files(), true) === false) {
+        if (array_key_exists($file, $mockedFiles) === false) {
             /** @noinspection PhpIncludeInspection */
             $mockedFiles[$key] = require $file;
         }
