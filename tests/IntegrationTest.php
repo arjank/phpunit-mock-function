@@ -4,7 +4,7 @@ namespace Potherca\Phpunit\MockFunction;
 
 use PHPUnit\Framework\TestCase;
 
-class BuilderTest extends TestCase
+class IntegrationTest extends TestCase
 {
     const MOCK_RETURN = 'Mock return value for function "%s", (%s pass)';
 
