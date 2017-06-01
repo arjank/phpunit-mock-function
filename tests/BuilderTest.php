@@ -6,18 +6,7 @@ use PHPUnit\Framework\TestCase;
 
 class BuilderTest extends TestCase
 {
-    const MOCK_RETURN = 'Mock return value for function "%s"';
-
-    /**
-     * @param string $functionName
-     * @param string|null $file
-     *
-     * @dataProvider provideFunctionsToMock
-     */
-    final public function testBuilderShouldMockFunctionWhenCalled($functionName, $file = null)
-    {
-        $this->createMockFunction($functionName, $file);
-    }
+    const MOCK_RETURN = 'Mock return value for function "%s", (%s pass)';
 
     final public function testBuilderShouldMockUserlandFunctionWhenCalledFromTestClass()
     {
@@ -74,23 +63,55 @@ class BuilderTest extends TestCase
     }
 
     /**
-     * @param $functionName
-     * @param $file
+     * @param string $functionName
+     * @param string|null $file
+     *
+     * @dataProvider provideFunctionsToMock
      */
-    private function createMockFunction($functionName, $file = '')
+    final public function testBuilderShouldMockFunctionWhenCalledAgain($functionName, $file = '')
+    {
+        $this->createMockFunction($functionName, $file, 'second');
+    }
+
+    /**
+     * @param string $functionName
+     * @param string|null $file
+     *
+     * @dataProvider provideFunctionsToMock
+     */
+    final public function testBuilderShouldUpdateMockFunctionWhenGivenDifferentReturnValue($functionName, $file = '')
+    {
+        $this->createMockFunction($functionName, $file, 'third');
+    }
+
+    /**
+     * @param string $functionName
+     * @param string $file
+     * @param string $pass
+     */
+    private function createMockFunction($functionName, $file = '', $pass = '')
     {
         $functionName = ltrim($functionName, '\\');
 
-        $expectedReturnValue = vsprintf(self::MOCK_RETURN, [$functionName]);
+        $pass = $pass ?: 'first';
 
-        $builder = new Builder($this, $functionName, [], $expectedReturnValue);
 
-        $builder->getMock();
+        $builder = new Builder($this, $functionName, []);
+
+        $mockFunction = $builder->getMock();
 
         if (strpos($functionName, '\\') === false) {
             /* Functions in global scope are mocked in the current namespace */
             $functionName = __NAMESPACE__ . '\\' . $functionName;
+
+            if ($file !== '') {
+                /* Files are only loaded once, so $pass will always be equal to first returned value */
+                $pass = 'first';
+            }
         }
+
+        $expectedReturnValue = vsprintf(self::MOCK_RETURN, [$functionName, $pass]);
+        $mockFunction->setReturnValue($expectedReturnValue);
 
         if ($file !== '') {
             $actualReturnValue = requireOnce(__DIR__ . '/fixtures/' . $file);
@@ -115,7 +136,7 @@ class BuilderTest extends TestCase
             'Native function in namespace' => ['Foo\\strtolower', 'native-function-in-namespace.php'],
             'Native function in test class' => ['get_defined_functions'],
             'Userland function from another namespace' => ['Bar\\foo', 'userland-function-from-another-namespace.php'],
-            'Userland function in global scope' => [__NAMESPACE__.'\\foo', 'userland-function-in-global-scope.php'],
+            'Userland function in global scope' => ['\\foo', 'userland-function-in-global-scope.php'],
             'Userland function in namespace' => ['\\Foo\\foo', 'userland-function-in-namespace.php'],
             'Userland function in test class' => ['mockFunction'],
         ];
