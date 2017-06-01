@@ -6,8 +6,6 @@ function requireOnce($file)
 {
     static $mockedFiles = [];
 
-    $result = true;
-
     $getCallerNamespace  = function () {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
 
@@ -26,10 +24,12 @@ function requireOnce($file)
     $containsNamespaceDeclaration = preg_match('/namespace [a-zA-Z_]+[a-zA-Z0-9_\\\\]*;/im', $contents);
 
     if ($containsNamespaceDeclaration === 1) {
+        $key = '_'.md5($file);
+
         /* $file contents contains a namespace, so just `require_once` it... */
         if (in_array($file, get_included_files(), true) === false) {
             /** @noinspection PhpIncludeInspection */
-            $result = require $file;
+            $mockedFiles[$key] = require $file;
         }
     } else {
         /* $file contents does not contain a namespace, let's add one... */
@@ -39,7 +39,6 @@ function requireOnce($file)
         $key = '_'.md5($namespace.'\\'.$file);
 
         if (array_key_exists($key, $mockedFiles) === false) {
-            $mockedFiles[$key] = $file;
 
             // @FIXME: Use parser/lexer instead of `substr`
             $body = substr($contents, 5);
@@ -53,11 +52,11 @@ function requireOnce($file)
 
             $eval = $template->render();
 
-            $result = eval($eval);
+            $mockedFiles[$key] = eval($eval);
         }
     }
 
-    return $result;
+    return $mockedFiles[$key];
 }
 
 /*EOF*/
