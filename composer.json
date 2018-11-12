@@ -5,7 +5,7 @@
     "license": "GPL-3.0",
     "require": {
         "phpunit/php-text-template": "^1.0",
-        "phpunit/phpunit": "^5.0"
+        "phpunit/phpunit": "^5.0|^6.0"
     },
     "autoload": {
         "files": [
